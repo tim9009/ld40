@@ -1,4 +1,3 @@
-////////////////////////////// CLASS NAME CLASS //////////////////////////////
 // Constructor
 function className(initArgs) {
 	// Extend VroomEntity NOTE: default arguments are placeholders and need to be replaced or defined.
