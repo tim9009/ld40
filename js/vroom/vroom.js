@@ -47,6 +47,20 @@ var Vroom = {
 			clicked: false,
 		};
 
+		// Physics options
+		Vroom.physics = {
+			physicsEnabled: true,
+			gravityEnabled: false,
+			gravity: {
+				x: 0,
+				y: 0,
+			},
+			friction: {
+				x: 0,
+				y: 0,
+			},
+		};
+
 		// Engine state
 		Vroom.halt = false;
 
@@ -67,6 +81,26 @@ var Vroom = {
 				Vroom.backgroundColor = options.backgroundColor;
 			} else {
 				Vroom.backgroundColor = '#000';
+			}
+
+			// Physics
+			if(typeof options.physics !== 'undefined') {
+				// Physics enabled
+				if(typeof options.physics.physicsEnabled !== 'undefined') {
+					Vroom.physics.physicsEnabled = options.physics.physicsEnabled;
+				}
+				// Gravity enabled
+				if(typeof options.physics.gravityEnabled !== 'undefined') {
+					Vroom.physics.gravityEnabled = options.physics.gravityEnabled;
+				}
+				// Gravity
+				if(typeof options.physics.gravity !== 'undefined') {
+					Vroom.physics.gravity = options.physics.gravity;
+				}
+				// Friction
+				if(typeof options.physics.friction !== 'undefined') {
+					Vroom.physics.friction = options.physics.friction;
+				}
 			}
 		}
 
@@ -412,53 +446,79 @@ var Vroom = {
 	},
 
 	updatePhysics: function(step) {
-		// Loop through entities and update positions based on velocities
-		for(var entityID in Vroom.entityList) {
-			var entity = Vroom.entityList[entityID];
-			if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
-				switch(entity.physicsEntityType) {
-					case VroomEntity.KINEMATIC:
-						entity.pos.x += entity.vel.x * step;
-						entity.pos.y += entity.vel.y * step;
-						break;
+		if(Vroom.physics.physicsEnabled) {
+			// Loop through entities and update positions based on velocities and gravity
+			for(var entityID in Vroom.entityList) {
+				var entity = Vroom.entityList[entityID];
+				if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
+					switch(entity.physicsEntityType) {
+						case VroomEntity.KINEMATIC:
+							// Update velocity
+							entity.vel.x += entity.acc.x * step;
+							entity.vel.y += entity.acc.y * step;
 
-					case VroomEntity.DYNAMIC:
-						// Dynamic stuff
-						break;
+							// Update position
+							entity.pos.x += entity.vel.x * step;
+							entity.pos.y += entity.vel.y * step;
+							break;
+
+						case VroomEntity.DYNAMIC:
+							// Update velocity
+							entity.vel.x += (entity.acc.x + Vroom.physics.gravity.x) * step;
+							entity.vel.y += (entity.acc.y + Vroom.physics.gravity.y) * step;
+
+							// Apply friction
+							entity.vel.x = entity.vel.x * Vroom.physics.friction.x;
+							entity.vel.y = entity.vel.y * Vroom.physics.friction.y;
+
+							// Reset velocity if lower than threshold
+							if(Math.abs(entity.vel.x) < 0.00001) {
+								entity.vel.x = 0;
+							}
+
+							if(Math.abs(entity.vel.y) < 0.00001) {
+								entity.vel.y = 0;
+							}
+
+							// Update position
+							entity.pos.x += entity.vel.x * step;
+							entity.pos.y += entity.vel.y * step;
+							break;
+					}
 				}
 			}
-		}
-		// Loop through entities and detect collisions. Resolve collisions as they are detected.
-		for(var entityID in Vroom.entityList) {
-			var entity = Vroom.entityList[entityID];
-				if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
-					for(var targetID in Vroom.entityList) {
-						if(targetID !== entityID) {
-							var target = Vroom.entityList[targetID];
-							if(target.physicsEnabled) {
-								// Check if current entity and target is colliding
-								if(Vroom.collideEntity(entity, target)) {
-									// Check if entity and target has registered a collision event and fire the event
-									if(typeof entity.onCollision === 'function') {
-										entity.onCollision(target);
-									}
+			// Loop through entities and detect collisions. Resolve collisions as they are detected.
+			for(var entityID in Vroom.entityList) {
+				var entity = Vroom.entityList[entityID];
+					if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
+						for(var targetID in Vroom.entityList) {
+							if(targetID !== entityID) {
+								var target = Vroom.entityList[targetID];
+								if(target.physicsEnabled) {
+									// Check if current entity and target is colliding
+									if(Vroom.collideEntity(entity, target)) {
+										// Check if entity and target has registered a collision event and fire the event
+										if(typeof entity.onCollision === 'function') {
+											entity.onCollision(target);
+										}
 
-									if(typeof target.onCollision === 'function') {
-										target.onCollision(entity);
-									}
+										if(typeof target.onCollision === 'function') {
+											target.onCollision(entity);
+										}
 
-									if(target.physicsCollisionType !== VroomEntity.NONE) {
-										switch(entity.physicsCollisionType) {
-											case VroomEntity.DISPLACE:
-												Vroom.resolveDisplace(entity, target);
-												break;
+										if(target.physicsCollisionType !== VroomEntity.NONE) {
+											switch(entity.physicsCollisionType) {
+												case VroomEntity.DISPLACE:
+													Vroom.resolveDisplace(entity, target);
+													break;
+											}
 										}
 									}
 								}
 							}
 						}
 					}
-				}
+			}
 		}
 	},
 
@@ -640,6 +700,10 @@ function VroomEntity(physicsEnabled, physicsEntityType, physicsCollisionType) {
 	this.halfDim = {
 		width: 0,
 		height: 0,
+	};
+	this.acc = {
+		x: 0,
+		y: 0,
 	};
 	this.vel = {
 		x: 0,
