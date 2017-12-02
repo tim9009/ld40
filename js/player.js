@@ -1,14 +1,14 @@
 ////////////////////////////// PLAYER //////////////////////////////
 var player = new VroomEntity(true, VroomEntity.DYNAMIC, VroomEntity.DISPLACE);
 player.init = function() {
-	this.layer = 2;
+	this.layer = 1;
 	this.pos = {
 		x: 100,
 		y: 100,
 	};
 	this.dim = {
-		width: 50,
-		height: 100,
+		width: 32,
+		height: 64,
 	};
 
 	this.updateBounds();
@@ -25,6 +25,24 @@ player.init = function() {
 	this.moving = false;
 	this.onGround = false;
 	this.direction = 'right';
+
+	this.carrySlots = [
+		{
+			item: null,
+		},
+		{
+			item: null,
+		},
+		{
+			item: null,
+		},
+		{
+			item: null,
+		},
+	];
+
+	this.itemsWithinReach = [];
+
 	this.stateCache = {
 		pos: {
 			x: 100,
@@ -34,11 +52,11 @@ player.init = function() {
 		direction: 'right',
 	};
 
-	//this.idleLeftAnimation = new VroomSprite('sprites/player-idle-left.png', true, 200, 12, 24, 24, 0);
-	//this.idleRightAnimation = new VroomSprite('sprites/player-idle-right.png', true, 200, 12, 24, 24, 0);
-	//this.runningLeftAnimation = new VroomSprite('sprites/player-running-left.png', true, 100, 12, 24, 8, 0);
-	//this.runningRightAnimation = new VroomSprite('sprites/player-running-right.png', true, 100, 12, 24, 8, 0);
-	//this.activeAnimation = this.idleLeftAnimation;
+	this.idleLeftAnimation = new VroomSprite('sprites/player_idle_left.png', false, 0, 32, 64, 1, 0);
+	this.idleRightAnimation = new VroomSprite('sprites/player_idle_right.png', false, 0, 32, 64, 1, 0);
+	this.runningLeftAnimation = new VroomSprite('sprites/player_run_left.png', false, 0, 32, 64, 1, 0);
+	this.runningRightAnimation = new VroomSprite('sprites/player_run_right.png', true, 100, 32, 64, 6, 0);
+	this.activeAnimation = this.idleLeftAnimation;
 
 	// Register player entity
 	Vroom.registerEntity(player);
@@ -59,6 +77,10 @@ player.handleInput = function(step) {
 	var wPressed = Vroom.isKeyPressed(87);
 	var dPressed = Vroom.isKeyPressed(68);
 	var sPressed = Vroom.isKeyPressed(83);
+	var hPressed = Vroom.isKeyPressed(72);
+	var jPressed = Vroom.isKeyPressed(74);
+	var kPressed = Vroom.isKeyPressed(75);
+	var lPressed = Vroom.isKeyPressed(76);
 	var spacePressed = Vroom.isKeyPressed(32);
 
 	// Left
@@ -69,8 +91,9 @@ player.handleInput = function(step) {
 	}
 
 	// Up
-	if(wPressed && !sPressed) {
-		
+	if(wPressed && this.onGround) {
+		tempAccY = -0.2;
+		this.moving = true;
 	}
 
 	// Right
@@ -85,9 +108,32 @@ player.handleInput = function(step) {
 		
 	}
 
-	if(spacePressed && this.onGround) {
-		tempAccY = -0.2;
-		this.moving = true;
+	// Carry slot 1
+	if(hPressed) {
+		this.pickUpItem(0);
+	} else {
+		this.dropItem(0);
+	}
+
+	// Carry slot 2
+	if(jPressed) {
+		this.pickUpItem(1);
+	} else {
+		this.dropItem(1);
+	}
+
+	// Carry slot 3
+	if(kPressed) {
+		this.pickUpItem(2);
+	} else {
+		this.dropItem(2);
+	}
+
+	// Carry slot 4
+	if(lPressed) {
+		this.pickUpItem(3);
+	} else {
+		this.dropItem(3);
 	}
 
 	// Apply movement
@@ -100,8 +146,33 @@ player.handleInput = function(step) {
 	}
 };
 
+player.pickUpItem = function(slot) {
+	if(this.carrySlots[slot].item === null && this.itemsWithinReach.length > 0) {
+		console.log('Picking up!');
+		// Pick up the first available item
+		this.carrySlots[slot].item = this.itemsWithinReach[0];
+		this.carrySlots[slot].item.physicsEnabled = false;
+		this.itemsWithinReach.splice(0, 1);
+	}
+};
+
+player.dropItem = function(slot) {
+	if(this.carrySlots[slot].item !== null) {
+		console.log('Dropping!');
+		// Drop the item in a slot
+		this.carrySlots[slot].item.physicsEnabled = true;
+		this.carrySlots[slot].item = null;
+	}
+};
+
 player.onCollision = function(target) {
 	this.onGround = true;
+
+	if(target instanceof Item) {
+		if(target.itemType === 'treasure') {
+			this.itemsWithinReach.push(target);
+		}
+	}
 };
 
 player.update = function(step) {
@@ -144,7 +215,7 @@ player.update = function(step) {
 				this.activeAnimation = this.idleLeftAnimation;
 			}
 
-			//this.activeAnimation.reset();
+			this.activeAnimation.reset();
 			this.stateCache.moving = false;
 		}
 	} else {
@@ -156,7 +227,7 @@ player.update = function(step) {
 				this.activeAnimation = this.runningLeftAnimation;
 			}
 
-			//this.activeAnimation.reset();
+			this.activeAnimation.reset();
 			this.stateCache.moving = true;
 		}
 	}
@@ -166,23 +237,40 @@ player.update = function(step) {
 		this.stateCache.direction = this.direction;
 	}
 
-	// Reset onGround state
+	// Update carried items
+	for(var itemIndex in this.carrySlots) {
+		if(this.carrySlots[itemIndex].item !== null) {
+			this.carrySlots[itemIndex].item.pos.x = this.pos.x + (this.carrySlots[itemIndex].item.dim.width * itemIndex) - 8;
+			this.carrySlots[itemIndex].item.pos.y = this.pos.y + 32;
+		}
+	}
+
+	// Reset collision based state
 	this.onGround = false;
+	this.itemsWithinReach = [];
+
 
 	// Update active animation
-	//this.activeAnimation.update(step);
+	if(this.activeAnimation.animated) {
+		this.activeAnimation.update(step);
+	}
 };
 
 player.render = function(camera) {
-	//this.activeAnimation.render(this.pos.x, this.pos.y, this.dim.width, this.dim.height);
-	
+	var relativePos = {
+		x: this.pos.x - camera.pos.x,
+		y: this.pos.y - camera.pos.y,
+	};
+
+	this.activeAnimation.render(relativePos, this.dim, this.dim);
+
 	// Hitbox
 	Vroom.ctx.beginPath();
 	Vroom.ctx.lineWidth = "1";
 	Vroom.ctx.moveTo(this.pos.x, this.pos.y);
 	Vroom.ctx.strokeStyle = "red";
 
-	Vroom.ctx.rect(this.pos.x - camera.pos.x, this.pos.y - camera.pos.y, this.dim.width, this.dim.height);
+	Vroom.ctx.rect(relativePos.x, relativePos.y, this.dim.width, this.dim.height);
 
 	Vroom.ctx.stroke();
 };

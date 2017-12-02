@@ -105,8 +105,8 @@ var Vroom = {
 		}
 
 		// Event listners
-		document.addEventListener('keydown', Vroom.handleKeyDown);
-		document.addEventListener('keyup', Vroom.handleKeyUp);
+		window.addEventListener('keydown', Vroom.handleKeyDown);
+		window.addEventListener('keyup', Vroom.handleKeyUp);
 		Vroom.canvas.addEventListener('mousemove', Vroom.handleMouseMove);
 		Vroom.canvas.addEventListener('mousedown', Vroom.handleMouseDown);
 		Vroom.canvas.addEventListener('mouseup', Vroom.handleMouseUp);
@@ -494,34 +494,34 @@ var Vroom = {
 			// Loop through entities and detect collisions. Resolve collisions as they are detected.
 			for(var entityID in Vroom.entityList) {
 				var entity = Vroom.entityList[entityID];
-					if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
-						for(var targetID in Vroom.entityList) {
-							if(targetID !== entityID) {
-								var target = Vroom.entityList[targetID];
-								if(target.physicsEnabled) {
-									// Check if current entity and target is colliding
-									if(Vroom.collideEntity(entity, target)) {
-										// Check if entity and target has registered a collision event and fire the event
-										if(typeof entity.onCollision === 'function') {
-											entity.onCollision(target);
-										}
+				if(entity.physicsEnabled && entity.physicsEntityType !== VroomEntity.STATIC) {
+					for(var targetID in Vroom.entityList) {
+						if(targetID !== entityID) {
+							var target = Vroom.entityList[targetID];
+							if(target.physicsEnabled) {
+								// Check if current entity and target is colliding
+								if(Vroom.collideEntity(entity, target)) {
+									// Check if entity and target has registered a collision event and fire the event
+									if(typeof entity.onCollision === 'function') {
+										entity.onCollision(target);
+									}
 
-										if(typeof target.onCollision === 'function') {
-											target.onCollision(entity);
-										}
+									if(typeof target.onCollision === 'function') {
+										target.onCollision(entity);
+									}
 
-										if(target.physicsCollisionType !== VroomEntity.NONE) {
-											switch(entity.physicsCollisionType) {
-												case VroomEntity.DISPLACE:
-													Vroom.resolveDisplace(entity, target);
-													break;
-											}
+									if(target.physicsCollisionType !== VroomEntity.NONE) {
+										switch(entity.physicsCollisionType) {
+											case VroomEntity.DISPLACE:
+												Vroom.resolveDisplace(entity, target);
+												break;
 										}
 									}
 								}
 							}
 						}
 					}
+				}
 			}
 		}
 	},
@@ -752,8 +752,8 @@ VroomEntity.prototype.getLeft = function() {
 
 VroomEntity.prototype.insideViewport = function() {
 	if(this.getBottom > Vroom.activeCamera.y &&
-	this.getTop < Vroom.activeCamera.y + Vroom.canvas.height &&
-	this.getLeft < Vroom.activeCamera.x + Vroom.canvas.width &&
+	this.getTop < Vroom.activeCamera.y + Vroom.dim.height &&
+	this.getLeft < Vroom.activeCamera.x + Vroom.dim.width &&
 	this.getRight > Vroom.activeCamera.x) {
 		return true;
 	} else {
@@ -928,7 +928,7 @@ VroomSprite.prototype.update = function(step) {
 	}
 };
 
-VroomSprite.prototype.render = function(pos, dim) {
+VroomSprite.prototype.render = function(pos, dim, destinationDim) {
 	if(this.loaded) {
 		dim = dim || this.dim;
 		Vroom.ctx.drawImage(
@@ -939,8 +939,8 @@ VroomSprite.prototype.render = function(pos, dim) {
 			this.dim.height,                                                                                           // Slice height
 			pos.x,                                                                                                          // Destination (canvas) x position
 			pos.y,                                                                                                          // Destination (canvas) y position
-			dim.width,                                                                                                      // Destination (canvas) width
-			dim.height                                                                                                     // Destination (canvas) height
+			destinationDim.width,                                                                                                      // Destination (canvas) width
+			destinationDim.height                                                                                                     // Destination (canvas) height
 		);
 	}
 };

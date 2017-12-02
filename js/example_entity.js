@@ -24,16 +24,6 @@ entityName.init = function(physicsEnabled, physicsEntityType, physicsCollisionTy
 	this.attributeOne = "Hello World";
 };
 
-// Collision event function. Is called every tick the entity is colliding.
-entityName.onCollision = function(target) {
-	
-};
-
-// Update function. Handles all logic for objects related to this module.
-entityName.update = function(step) {
-
-};
-
 // Render function. Draws all elements related to this module to screen.
 entityName.render = function(camera) {
 	if(this.insideViewport) {

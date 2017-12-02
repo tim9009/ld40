@@ -2,7 +2,7 @@
 function start() {
 	Vroom.activateCamera(Vroom.createCamera(0, 0, 1, 'both', 0));
 	Vroom.activeCamera.follow(player._id);
-	Vroom.activeCamera.lerpPercentage = 0.006;
+	Vroom.activeCamera.lerpPercentage = 0.008;
 
 	// Disable image smooting
 	Vroom.ctx.mozImageSmoothingEnabled = false;
@@ -19,4 +19,4 @@ function start() {
 start();
 
 // Wait for things to load.
-//setTimeout(start, 1000);
+setTimeout(loadMap, 500);
