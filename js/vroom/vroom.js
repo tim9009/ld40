@@ -373,6 +373,10 @@ var Vroom = {
 		}
 	},
 
+	deregisterEntity: function(ID) {
+		delete Vroom.entityList[ID];
+	},
+
 	deleteEntity: function(ID) {
 		delete Vroom.entityList[ID];
 		delete Vroom.usedIDList[ID];
