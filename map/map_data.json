@@ -24,18 +24,16 @@
                     {
                      "animated":true,
                      "frames":4,
-                     "itemType":"treasure",
                      "sprite":"tech_orb.png"
                     },
                  "propertytypes":
                     {
                      "animated":"bool",
                      "frames":"int",
-                     "itemType":"string",
                      "sprite":"string"
                     },
                  "rotation":0,
-                 "type":"",
+                 "type":"treasure",
                  "visible":true,
                  "width":16,
                  "x":616,
@@ -50,18 +48,16 @@
                     {
                      "animated":true,
                      "frames":4,
-                     "itemType":"treasure",
                      "sprite":"tech_orb.png"
                     },
                  "propertytypes":
                     {
                      "animated":"bool",
                      "frames":"int",
-                     "itemType":"string",
                      "sprite":"string"
                     },
                  "rotation":0,
-                 "type":"",
+                 "type":"treasure",
                  "visible":true,
                  "width":16,
                  "x":648,
@@ -76,22 +72,32 @@
                     {
                      "animated":true,
                      "frames":4,
-                     "itemType":"treasure",
                      "sprite":"tech_orb.png"
                     },
                  "propertytypes":
                     {
                      "animated":"bool",
                      "frames":"int",
-                     "itemType":"string",
                      "sprite":"string"
                     },
                  "rotation":0,
-                 "type":"",
+                 "type":"treasure",
                  "visible":true,
                  "width":16,
                  "x":584,
                  "y":800
+                }, 
+                {
+                 "gid":15,
+                 "height":64,
+                 "id":17,
+                 "name":"player",
+                 "rotation":0,
+                 "type":"player",
+                 "visible":true,
+                 "width":32,
+                 "x":320,
+                 "y":672
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -99,7 +105,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":17,
+ "nextobjectid":22,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.0.3",
@@ -121,6 +127,10 @@
         {
          "firstgid":11,
          "source":"..\/..\/..\/..\/..\/..\/Users\/timeriksen\/Documents\/PROJECTS\/LD40\/Map\/tech_orb.tsx"
+        }, 
+        {
+         "firstgid":15,
+         "source":"..\/..\/..\/..\/..\/..\/Users\/timeriksen\/Documents\/PROJECTS\/LD40\/Map\/player.tsx"
         }],
  "tilewidth":32,
  "type":"map",

@@ -57,25 +57,30 @@ function initMap() {
 				for (var itemIndex in gameData.mapData.layers[layer].objects) {
 					var obj = gameData.mapData.layers[layer].objects[itemIndex];
 					console.log('Parsing object with id: ' + obj.id);
+					if(obj.type == 'player') {
+						player.pos.x = obj.x;
+						player.pos.y = obj.y;
+						
+					} else {
 
-					var itemDim = {
-						width: obj.width,
-						height: obj.height,
-					};
+						var itemDim = {
+							width: obj.width,
+							height: obj.height,
+						};
 
-					var itemPos = {
-						x: obj.x,
-						y: obj.y,
-					};
+						var itemPos = {
+							x: obj.x,
+							y: obj.y,
+						};
 
-					var itemType = obj.properties.itemType;
-					var sprite = obj.properties.sprite;
-					var animated = obj.properties.animated;
-					var frames = obj.properties.frames;
+						var sprite = obj.properties.sprite;
+						var animated = obj.properties.animated;
+						var frames = obj.properties.frames;
 
-					var objEntity = new Item(itemDim, itemDim, itemPos, parseInt(layer, 10), itemType, sprite, animated, frames);
-					gameData.mapObjects[objEntity._id] = objEntity;
-					console.log(objEntity);
+						var objEntity = new Item(itemDim, itemDim, itemPos, parseInt(layer, 10), obj.type, sprite, animated, frames);
+						gameData.mapObjects[objEntity._id] = objEntity;
+						console.log(objEntity);
+					}
 				}
 			}
 		}

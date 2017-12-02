@@ -4,7 +4,7 @@ player.init = function() {
 	this.layer = 1;
 	this.pos = {
 		x: 100,
-		y: 100,
+		y: 600,
 	};
 	this.dim = {
 		width: 32,
@@ -19,11 +19,16 @@ player.init = function() {
 	};
 
 	this.speed = 0.005;
-	this.speedLimit = 0.3;
+	this.speedLimit = {
+		x: 0.3,
+		y: 0.5,
+	};
 	this.lastMovementTime = Date.now();
 	this.inputTickRate = 20;
 	this.moving = false;
 	this.onGround = false;
+	this.jumping = false;
+	this.falling = false;
 	this.direction = 'right';
 
 	this.carrySlots = [
@@ -49,13 +54,23 @@ player.init = function() {
 			y: 100,
 		},
 		moving: false,
+		jumping: false,
+		falling: false,
 		direction: 'right',
 	};
 
 	this.idleLeftAnimation = new VroomSprite('sprites/player_idle_left.png', false, 0, 32, 64, 1, 0);
 	this.idleRightAnimation = new VroomSprite('sprites/player_idle_right.png', false, 0, 32, 64, 1, 0);
-	this.runningLeftAnimation = new VroomSprite('sprites/player_run_left.png', false, 0, 32, 64, 1, 0);
+
+	this.runningLeftAnimation = new VroomSprite('sprites/player_run_left.png', true, 100, 32, 64, 6, 0);
 	this.runningRightAnimation = new VroomSprite('sprites/player_run_right.png', true, 100, 32, 64, 6, 0);
+
+	this.jumpingLeftAnimation = new VroomSprite('sprites/player_jump_left.png', false, 0, 32, 64, 1, 0);
+	this.jumpingRightAnimation = new VroomSprite('sprites/player_jump_right.png', false, 0, 32, 64, 1, 0);
+
+	this.fallingLeftAnimation = new VroomSprite('sprites/player_fall_left.png', false, 0, 32, 64, 1, 0);
+	this.fallingRightAnimation = new VroomSprite('sprites/player_fall_right.png', false, 0, 32, 64, 1, 0);
+
 	this.activeAnimation = this.idleLeftAnimation;
 
 	// Register player entity
@@ -92,7 +107,7 @@ player.handleInput = function(step) {
 
 	// Up
 	if(wPressed && this.onGround) {
-		tempAccY = -0.2;
+		tempAccY = -1;
 		this.moving = true;
 	}
 
@@ -138,11 +153,8 @@ player.handleInput = function(step) {
 
 	// Apply movement
 	if(this.moving === true) {
-		// Lock input to input tick rate
-		//if(Date.now() - this.lastMovementTime >= this.inputTickRate) {
-			this.acc = {x: tempAccX, y: tempAccY};
-			this.lastMovementTime = Date.now();
-		//}
+		this.acc = {x: tempAccX, y: tempAccY};
+		this.lastMovementTime = Date.now();
 	}
 };
 
@@ -150,8 +162,8 @@ player.pickUpItem = function(slot) {
 	if(this.carrySlots[slot].item === null && this.itemsWithinReach.length > 0) {
 		console.log('Picking up!');
 		// Pick up the first available item
+		this.itemsWithinReach[0].physicsEnabled = false;
 		this.carrySlots[slot].item = this.itemsWithinReach[0];
-		this.carrySlots[slot].item.physicsEnabled = false;
 		this.itemsWithinReach.splice(0, 1);
 	}
 };
@@ -160,13 +172,23 @@ player.dropItem = function(slot) {
 	if(this.carrySlots[slot].item !== null) {
 		console.log('Dropping!');
 		// Drop the item in a slot
+		if(this.direction == 'right') {
+			this.carrySlots[slot].item.pos.x = this.pos.x + this.dim.width + (this.carrySlots[slot].item.dim.width * slot);
+		} else {
+			this.carrySlots[slot].item.pos.x = this.pos.x - (this.carrySlots[slot].item.dim.width * slot);
+		}
+
 		this.carrySlots[slot].item.physicsEnabled = true;
 		this.carrySlots[slot].item = null;
 	}
 };
 
 player.onCollision = function(target) {
-	this.onGround = true;
+	if(target.pos.y >= this.pos.y + this.dim.height - 1) {
+		this.onGround = true;
+		this.jumping = false;
+		this.falling = false;
+	}
 
 	if(target instanceof Item) {
 		if(target.itemType === 'treasure') {
@@ -187,50 +209,67 @@ player.update = function(step) {
 	}
 
 	// Enforce speed limit
-	if(Math.abs(this.vel.x) > this.speedLimit) {
+	if(Math.abs(this.vel.x) > this.speedLimit.x) {
 		var xSign = Math.sign(this.vel.x);
 		if(xSign == -1 || xSign == -0) {
-			this.vel.x = -this.speedLimit;
+			this.vel.x = -this.speedLimit.x;
 		} else {
-			this.vel.x = this.speedLimit;
+			this.vel.x = this.speedLimit.x;
 		}
 	}
 
-	if(Math.abs(this.vel.y) > this.speedLimit) {
+	if(Math.abs(this.vel.y) > this.speedLimit.y) {
 		var ySign = Math.sign(this.vel.y);
 		if(ySign == -1 || ySign == -0) {
-			this.vel.y = -this.speedLimit;
+			this.vel.y = -this.speedLimit.y;
 		} else {
-			this.vel.y = this.speedLimit;
+			this.vel.y = this.speedLimit.y;
 		}
+	}
+
+	// Set moving flag if in air
+	if(this.jumping || this.falling) {
+		this.moving = true;
 	}
 
 	// Handle changes in moving state
-	if(this.moving !== true) {
-		if(this.stateCache.moving === true || this.stateCache.direction !== this.direction) {
-			// Set animation based on current direction
-			if(this.direction == 'right') {
-				this.activeAnimation = this.idleRightAnimation;
-			} else {
-				this.activeAnimation = this.idleLeftAnimation;
-			}
-
-			this.activeAnimation.reset();
-			this.stateCache.moving = false;
+	if(this.falling) {
+		if(this.direction == 'right') {
+			this.activeAnimation = this.fallingRightAnimation;
+		} else {
+			this.activeAnimation = this.fallingLeftAnimation;
 		}
-	} else {
-		if(this.stateCache.moving === false || this.stateCache.direction !== this.direction) {
-			// Set animation based on current direction
-			if(this.direction == 'right') {
-				this.activeAnimation = this.runningRightAnimation;
-			} else {
-				this.activeAnimation = this.runningLeftAnimation;
-			}
-
-			this.activeAnimation.reset();
-			this.stateCache.moving = true;
+	} else if(this.jumping) {
+		if(this.direction == 'right') {
+			this.activeAnimation = this.jumpingRightAnimation;
+		} else {
+			this.activeAnimation = this.jumpingLeftAnimation;
 		}
-	}
+	} else if(this.moving !== true) {
+			if(this.stateCache.moving === true || this.stateCache.jumping === true || this.stateCache.falling === true || this.stateCache.direction !== this.direction) {
+				// Set animation based on current direction
+				if(this.direction == 'right') {
+					this.activeAnimation = this.idleRightAnimation;
+				} else {
+					this.activeAnimation = this.idleLeftAnimation;
+				}
+
+				this.activeAnimation.reset();
+				this.stateCache.moving = false;
+			}
+		} else {
+			if(this.stateCache.moving === false || this.stateCache.jumping === true || this.stateCache.falling === true || this.stateCache.direction !== this.direction) {
+				// Set animation based on current direction
+				if(this.direction == 'right') {
+					this.activeAnimation = this.runningRightAnimation;
+				} else {
+					this.activeAnimation = this.runningLeftAnimation;
+				}
+
+				this.activeAnimation.reset();
+				this.stateCache.moving = true;
+			}
+		}
 
 	// Handle changes in direction state
 	if(this.direction !== this.stateCache.direction) {
@@ -240,13 +279,29 @@ player.update = function(step) {
 	// Update carried items
 	for(var itemIndex in this.carrySlots) {
 		if(this.carrySlots[itemIndex].item !== null) {
+			if(this.carrySlots[itemIndex].item.physicsEnabled) {
+				console.log('WARNING, PHYSICS ENABLED ON CARRIED ITEM : ' + itemIndex + '. DISABLING!');
+				this.carrySlots[itemIndex].item.physicsEnabled = false;
+			}
+
 			this.carrySlots[itemIndex].item.pos.x = this.pos.x + (this.carrySlots[itemIndex].item.dim.width * itemIndex) - 8;
 			this.carrySlots[itemIndex].item.pos.y = this.pos.y + 32;
 		}
 	}
 
+	// Cache state
+	this.stateCache.jumping = this.jumping;
+	this.stateCache.falling = this.falling;
+
 	// Reset collision based state
 	this.onGround = false;
+	if(this.vel.y < 0) {
+		this.jumping = true;
+		this.falling = false;
+	} else if(this.vel.y > 0) {
+		this.jumping = false;
+		this.falling = true;
+	}
 	this.itemsWithinReach = [];
 
 
@@ -265,14 +320,14 @@ player.render = function(camera) {
 	this.activeAnimation.render(relativePos, this.dim, this.dim);
 
 	// Hitbox
-	Vroom.ctx.beginPath();
-	Vroom.ctx.lineWidth = "1";
-	Vroom.ctx.moveTo(this.pos.x, this.pos.y);
-	Vroom.ctx.strokeStyle = "red";
+	// Vroom.ctx.beginPath();
+	// Vroom.ctx.lineWidth = "1";
+	// Vroom.ctx.moveTo(this.pos.x, this.pos.y);
+	// Vroom.ctx.strokeStyle = "red";
 
-	Vroom.ctx.rect(relativePos.x, relativePos.y, this.dim.width, this.dim.height);
+	// Vroom.ctx.rect(relativePos.x, relativePos.y, this.dim.width, this.dim.height);
 
-	Vroom.ctx.stroke();
+	// Vroom.ctx.stroke();
 };
 
 // Initiate player
