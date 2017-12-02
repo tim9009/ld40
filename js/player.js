@@ -1,10 +1,10 @@
 ////////////////////////////// PLAYER //////////////////////////////
 var player = new VroomEntity(true, VroomEntity.DYNAMIC, VroomEntity.DISPLACE);
 player.init = function() {
-	this.layer = 1;
+	this.layer = 2;
 	this.pos = {
 		x: 100,
-		y: 600,
+		y: 100,
 	};
 	this.dim = {
 		width: 32,
@@ -14,8 +14,8 @@ player.init = function() {
 	this.updateBounds();
 
 	this.friction = {
-		x: 0.999,
-		y: 0.999,
+		x: 0.99,
+		y: 0.99,
 	};
 
 	this.speed = 0.005;
@@ -45,6 +45,8 @@ player.init = function() {
 			item: null,
 		},
 	];
+
+	this.carriedItems = 0;
 
 	this.itemsWithinReach = [];
 
@@ -107,7 +109,7 @@ player.handleInput = function(step) {
 
 	// Up
 	if(wPressed && this.onGround) {
-		tempAccY = -1;
+		tempAccY = -0.3 + (0.05 * this.carriedItems);
 		this.moving = true;
 	}
 
@@ -162,9 +164,9 @@ player.pickUpItem = function(slot) {
 	if(this.carrySlots[slot].item === null && this.itemsWithinReach.length > 0) {
 		console.log('Picking up!');
 		// Pick up the first available item
-		this.itemsWithinReach[0].physicsEnabled = false;
 		this.carrySlots[slot].item = this.itemsWithinReach[0];
 		this.itemsWithinReach.splice(0, 1);
+		this.carrySlots[slot].item.physicsEnabled = false;
 	}
 };
 
@@ -173,18 +175,20 @@ player.dropItem = function(slot) {
 		console.log('Dropping!');
 		// Drop the item in a slot
 		if(this.direction == 'right') {
-			this.carrySlots[slot].item.pos.x = this.pos.x + this.dim.width + (this.carrySlots[slot].item.dim.width * slot);
+			this.carrySlots[slot].item.pos.x = this.getRight() + (this.carrySlots[slot].item.dim.width * slot);
 		} else {
-			this.carrySlots[slot].item.pos.x = this.pos.x - (this.carrySlots[slot].item.dim.width * slot);
+			this.carrySlots[slot].item.pos.x = this.pos.x - (this.carrySlots[slot].item.dim.width * (slot + 1));
 		}
 
 		this.carrySlots[slot].item.physicsEnabled = true;
+		this.carrySlots[slot].item.vel.x = this.vel.x * 1.1;
+		this.carrySlots[slot].item.vel.y = this.vel.y * 1.1;
 		this.carrySlots[slot].item = null;
 	}
 };
 
 player.onCollision = function(target) {
-	if(target.pos.y >= this.pos.y + this.dim.height - 1) {
+	if(target.getTop() >= this.getBottom() - 1 && target.getLeft() < this.getRight() && target.getRight() > this.getLeft()) {
 		this.onGround = true;
 		this.jumping = false;
 		this.falling = false;
@@ -202,10 +206,17 @@ player.update = function(step) {
 	this.handleInput(step);
 	this.cachePosition();
 
+	// Count carried items
+	this.carriedItems = 0;
+	for(var countingIndex in this.carrySlots) {
+		if(this.carrySlots[countingIndex].item !== null) {
+			this.carriedItems++;
+		}
+	}
+
 	// Reset velocity on touching ground
 	if(!this.moving && this.onGround && this.vel.x !== 0) {
 		this.vel.x = 0;
-		console.log('RESET');
 	}
 
 	// Enforce speed limit
@@ -276,16 +287,15 @@ player.update = function(step) {
 		this.stateCache.direction = this.direction;
 	}
 
-	// Update carried items
 	for(var itemIndex in this.carrySlots) {
 		if(this.carrySlots[itemIndex].item !== null) {
 			if(this.carrySlots[itemIndex].item.physicsEnabled) {
-				console.log('WARNING, PHYSICS ENABLED ON CARRIED ITEM : ' + itemIndex + '. DISABLING!');
+				// Fix for random phsics enabling bug
 				this.carrySlots[itemIndex].item.physicsEnabled = false;
 			}
 
-			this.carrySlots[itemIndex].item.pos.x = this.pos.x + (this.carrySlots[itemIndex].item.dim.width * itemIndex) - 8;
-			this.carrySlots[itemIndex].item.pos.y = this.pos.y + 32;
+			this.carrySlots[itemIndex].item.pos.x = this.pos.x + this.halfDim.width + (this.carrySlots[itemIndex].item.dim.width * itemIndex) - (this.carrySlots[itemIndex].item.halfDim.width * this.carriedItems);
+			this.carrySlots[itemIndex].item.pos.y = this.pos.y + 16;
 		}
 	}
 

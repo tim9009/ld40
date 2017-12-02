@@ -1,7 +1,7 @@
 // Constructor
-function Item(dim, destDim, pos, layer, itemType, sprite, animated, frames) {
+function Item(physicsEnabled, dim, destDim, pos, layer, itemType, sprite, animated, frames) {
 	// Extend VroomEntity
-	VroomEntity.call(this, true, VroomEntity.DYNAMIC, VroomEntity.DISPLACE);
+	VroomEntity.call(this, physicsEnabled, VroomEntity.DYNAMIC, VroomEntity.DISPLACE);
 	
 	this.layer = layer;
 
@@ -16,6 +16,7 @@ function Item(dim, destDim, pos, layer, itemType, sprite, animated, frames) {
 	};
 
 	this.itemType = itemType || 'placeholder';
+	this.onGround = false;
 
 	if(sprite) {
 		this.sprite = new VroomSprite('sprites/' + sprite, animated, 140, this.dim.width, this.dim.height, frames, 0);
@@ -33,11 +34,24 @@ Item.prototype.init = function() {
 	
 };
 
+Item.prototype.onCollision = function(target) {
+	if(target._id !== player._id &&  target.getTop() >= this.getBottom() - 1 && target.getLeft() < this.getRight() && target.getRight() > this.getLeft()) {
+		this.onGround = true;
+	}
+};
+
 // Update function. Handles all logic for objects related to this class.
 Item.prototype.update = function(step) {
+	// Reset velocity on touching ground
+	if(!this.moving && this.onGround && this.vel.x !== 0) {
+		this.vel.x = 0;
+	}
+
 	if(this.sprite.animated) {
 		this.sprite.update(step);
 	}
+
+	this.onGround = false;
 };
 
 // Render function. Draws all elements related to this module to screen.
