@@ -7,29 +7,16 @@ Vroom.init({
 	fps: 60,
 	inputPreventDefault: [32, 17, 37, 38, 39, 40],
 	backgroundColor: '#fff',
+	physics: {
+		physicsEnabled: true,
+		gravityEnabled: true,
+		gravity: {
+			x: 0,
+			y: 0.001,
+		},
+		friction: {
+			x: 0.999,
+			y: 0.999,
+		},
+	},
 });
-
-
-
-
-
-////////////////////////////// START ENGINE //////////////////////////////
-function start() {
-	Vroom.activateCamera(Vroom.createCamera(0, 0, 1, 'both', 0.5));
-
-	// Disable image smooting
-	Vroom.ctx.mozImageSmoothingEnabled = false;
-	Vroom.ctx.webkitImageSmoothingEnabled = false;
-	Vroom.ctx.msImageSmoothingEnabled = false;
-	Vroom.ctx.imageSmoothingEnabled = false;
-
-	// Vroooom vrooom!
-	Vroom.run();
-
-	gameState.gameStarted = true;
-}
-
-start();
-
-// Wait for things to load.
-//setTimeout(start, 1000);

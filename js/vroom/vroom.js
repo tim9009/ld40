@@ -750,6 +750,17 @@ VroomEntity.prototype.getLeft = function() {
 	return this.pos.x;
 };
 
+VroomEntity.prototype.insideViewport = function() {
+	if(this.getBottom > Vroom.activeCamera.y &&
+	this.getTop < Vroom.activeCamera.y + Vroom.canvas.height &&
+	this.getLeft < Vroom.activeCamera.x + Vroom.canvas.width &&
+	this.getRight > Vroom.activeCamera.x) {
+		return true;
+	} else {
+		return false;
+	}
+};
+
 // Entity constants
 VroomEntity.STATIC = 'static';
 VroomEntity.KINEMATIC = 'kinematic';

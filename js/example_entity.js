@@ -36,8 +36,10 @@ entityName.update = function(step) {
 
 // Render function. Draws all elements related to this module to screen.
 entityName.render = function(camera) {
-	Vroom.ctx.fillStyle = 'red';
-	Vroom.ctx.fillRect(this.pos.x, this.pos.y, this.dim.width, this.dim.height);
+	if(this.insideViewport) {
+		Vroom.ctx.fillStyle = 'red';
+		Vroom.ctx.fillRect(this.pos.x, this.pos.y, this.dim.width, this.dim.height);
+	}
 };
 
 // Init call
