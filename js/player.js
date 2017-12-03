@@ -49,6 +49,7 @@ player.init = function() {
 	this.carriedItems = 0;
 
 	this.itemsWithinReach = [];
+	this.collisionTop = false;
 
 	this.stateCache = {
 		pos: {
@@ -74,6 +75,17 @@ player.init = function() {
 	this.fallingRightAnimation = new VroomSprite('sprites/player_fall_right.png', false, 0, 32, 64, 1, 0);
 
 	this.activeAnimation = this.idleLeftAnimation;
+
+	// Step sound
+	this.stepSoundInterval = 175;
+	this.lastStepSoundPlayback = Date.now();
+	this.stepSound = new VroomSound('sounds/step.wav');
+	this.stepSound.loadBuffer();
+	this.stepSound.gain = 0.5;
+
+	this.jumpSound = new VroomSound('sounds/jump.wav');
+	this.jumpSound.loadBuffer();
+	this.jumpSound.gain = 0.5;
 
 	// Register player entity
 	Vroom.registerEntity(player);
@@ -108,9 +120,10 @@ player.handleInput = function(step) {
 	}
 
 	// Up
-	if(wPressed && this.onGround) {
+	if(wPressed && this.onGround && !this.collisionTop) {
 		tempAccY = -0.3 + (0.05 * this.carriedItems);
 		this.moving = true;
+		this.jumpSound.play();
 	}
 
 	// Right
@@ -188,10 +201,16 @@ player.dropItem = function(slot) {
 };
 
 player.onCollision = function(target) {
+	// Check if target is bellow player
 	if(target.getTop() >= this.getBottom() - 1 && target.getLeft() < this.getRight() && target.getRight() > this.getLeft()) {
 		this.onGround = true;
 		this.jumping = false;
 		this.falling = false;
+	} else
+
+	// Check if target is above player
+	if(target.getBottom() == this.getTop()) {
+		this.collisionTop = true;
 	}
 
 	if(target instanceof Item) {
@@ -206,7 +225,7 @@ player.update = function(step) {
 	if(!gameState.gameRunning) {
 		return;
 	}
-	
+
 	this.acc = {x: 0, y: 0};
 	this.handleInput(step);
 	this.cachePosition();
@@ -304,6 +323,15 @@ player.update = function(step) {
 		}
 	}
 
+	// Play step sound if moving on ground
+	if(this.moving && this.onGround) {
+		if(this.stepSound.playing) {
+			this.lastStepSoundPlayback = Date.now();
+		} else if(Date.now() - this.lastStepSoundPlayback >= this.stepSoundInterval) {
+			this.stepSound.play();
+		}
+	}
+
 	// Cache state
 	this.stateCache.jumping = this.jumping;
 	this.stateCache.falling = this.falling;
@@ -318,6 +346,7 @@ player.update = function(step) {
 		this.falling = true;
 	}
 	this.itemsWithinReach = [];
+	this.collisionTop = false;
 
 
 	// Update active animation
