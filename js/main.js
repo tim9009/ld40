@@ -28,9 +28,10 @@ music.gain = 1;
 Vroom.mainUpdateLoopExtension = function() {
 	// Play music
 	if(!music.playing) {
-		//music.play();
+		music.play();
 	}
 
+	// Check win/lose conditions
 	if(gameState.mapActive) {
 		// Update elapsed time
 		gameState.mapElapsedTime = (new Date() - gameState.mapTimeStart) / 1000;
@@ -51,11 +52,30 @@ Vroom.mainUpdateLoopExtension = function() {
 		}
 	}
 
+	//Check for key presses
+	if(!gameState.ui.mainMenuVisible) {
+		var escPressed = Vroom.isKeyPressed(27);
+		
+		if(escPressed) {
+			mainMenu.open();
+		}
+	}
+
 	// Check if game should be paused
 	if(gameState.ui.winScreenVisible || gameState.ui.loseScreenVisible || gameState.ui.mainMenuVisible) {
 		gameState.gameRunning = false;
 	}
 };
+
+function resetMapState() {
+	gameState.mapTimeStart = new Date();
+	gameState.mapElapsedTime = null;
+	gameState.mapScore = 0;
+	gameState.gameRunning = false;
+	gameState.mapActive = false;
+	gameState.mapWin = false;
+	gameState.mapLose = false;
+}
 
 function restartMap() {
 	// Reset drone
@@ -83,16 +103,17 @@ function startMap() {
 
 	gameState.ui.HUDVisible = true;
 
-	gameState.mapTimeStart = new Date();
-	gameState.mapElapsedTime = null;
-	gameState.mapScore = 0;
+	resetMapState();
+
 	gameState.gameRunning = true;
 	gameState.mapActive = true;
-	gameState.mapWin = false;
-	gameState.mapLose = false;
 }
 
 function startMapNumber(mapNumber) {
+	// Reset drone
+	drone.reset();
+	deregisterMap();
+	deleteMapObjects();
 	gameData.activeMap = mapNumber;
 	loadMap();
 	setTimeout(startMap, 800);

@@ -62,6 +62,18 @@ mainMenu.init = function() {
 	Vroom.registerEntity(mainMenu);
 };
 
+mainMenu.open = function() {
+	this.lastKeyPressTime = new Date();
+	
+	gameState.ui.mainMenuVisible = true;
+	gameState.ui.HUDVisible = false;
+	gameState.ui.winScreenVisible = false;
+	gameState.ui.loseScreenVisible = false;
+	resetMapState();
+	deregisterMap();
+	deleteMapObjects();
+};
+
 mainMenu.update = function(step) {
 	if(!gameState.ui.mainMenuVisible) {
 		return;
@@ -86,7 +98,6 @@ mainMenu.update = function(step) {
 
 		if(this.currentMenuPage == 'main') {
 			if(onePressed) {
-				console.log('got it!');
 				gameState.ui.mainMenuVisible = false;
 				startMapNumber(0);
 			}else
@@ -102,14 +113,17 @@ mainMenu.update = function(step) {
 
 		if(this.currentMenuPage === 'mapSelector') {
 			if(onePressed) {
+				gameState.ui.mainMenuVisible = false;
 				startMapNumber(0);
 			} else
 
 			if(twoPressed) {
+				gameState.ui.mainMenuVisible = false;
 				startMapNumber(1);
 			} else
 
 			if(threePressed) {
+				gameState.ui.mainMenuVisible = false;
 				startMapNumber(2);
 			}
 		}
@@ -174,22 +188,22 @@ mainMenu.render = function(camera) {
 		// First button
 		Vroom.ctx.fillStyle = '#fff';
 		Vroom.ctx.font = "15px lcd_solid";
-		Vroom.ctx.fillRect(30, 150, 260, 40);
+		Vroom.ctx.fillRect(30, 150, 320, 40);
 		Vroom.ctx.fillStyle = '#333';
-		Vroom.ctx.fillText('< Press "1" for first map.', 45, 176);
+		Vroom.ctx.fillText('< Press "1" for the first map.', 45, 176);
 
 		// Second button
 		Vroom.ctx.fillStyle = '#fff';
 		Vroom.ctx.font = "15px lcd_solid";
-		Vroom.ctx.fillRect(30, 200, 260, 40);
+		Vroom.ctx.fillRect(30, 200, 320, 40);
 		Vroom.ctx.fillStyle = '#333';
-		Vroom.ctx.fillText('< Press "2" for second map.', 45, 226);
+		Vroom.ctx.fillText('< Press "2" for the second map.', 45, 226);
 	} else
 
 	if(this.currentMenuPage === 'tutorial') {
 		Vroom.ctx.font = "10px lcd_solid";
 		Vroom.multilineText('CONTROLS:\n[A] Run left\n[D] Run right\n[W] Jump\n\n[H] Pick up an item\n[J] Pick up an item\n[K] Pick up an item\n[L] Pick up an item\n', {x: 30, y: 130}, 12);
-		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Arifacts are also heavy!', {x: 30, y: 250}, 12);
+		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down!', {x: 30, y: 250}, 12);
 	}
 };
 
@@ -224,9 +238,19 @@ winScreen.update = function(step) {
 	if(!gameState.ui.winScreenVisible) {
 		return;
 	}
+	var onePressed = Vroom.isKeyPressed(49);
+	var twoPressed = Vroom.isKeyPressed(50);
 
-	if(Vroom.isKeyPressed(13)) {
+	if(onePressed) {
 		restartMap();
+	} else
+
+	if(twoPressed) {
+		if(gameData.activeMap + 1 < gameData.maps.length) {
+			startMapNumber(gameData.activeMap + 1);
+		} else {
+			mainMenu.open();
+		}
 	}
 };
 
@@ -283,10 +307,23 @@ winScreen.render = function(camera) {
 	Vroom.ctx.fillText('RANK:  ' + rank, 30, 215);
 
 	// Back button
+	Vroom.ctx.fillStyle = '#fff';
 	Vroom.ctx.font = "15px lcd_solid";
 	Vroom.ctx.fillRect(30, 250, 255, 40);
 	Vroom.ctx.fillStyle = '#333';
-	Vroom.ctx.fillText('< Press enter to restart', 45, 276);
+	Vroom.ctx.fillText('< Press "1" to restart', 45, 276);
+
+	// Next button
+	Vroom.ctx.fillStyle = '#fff';
+	Vroom.ctx.font = "15px lcd_solid";
+	Vroom.ctx.fillRect(300, 250, 250, 40);
+	Vroom.ctx.fillStyle = '#333';
+
+	if(gameData.activeMap + 1 < gameData.maps.length) {
+		Vroom.ctx.fillText('Press "2" to continue >', 315, 276);
+	} else {
+		Vroom.ctx.fillText('Press "2" to go to menu >', 315, 276);
+	}
 };
 
 // Init call
@@ -321,7 +358,9 @@ loseScreen.update = function(step) {
 		return;
 	}
 
-	if(Vroom.isKeyPressed(13)) {
+	var onePressed = Vroom.isKeyPressed(49);
+
+	if(onePressed) {
 		restartMap();
 	}
 };
@@ -353,7 +392,7 @@ loseScreen.render = function(camera) {
 	Vroom.ctx.font = "15px lcd_solid";
 	Vroom.ctx.fillRect(30, 250, 255, 40);
 	Vroom.ctx.fillStyle = '#333';
-	Vroom.ctx.fillText('< Press enter to restart', 45, 276);
+	Vroom.ctx.fillText('< Press "1" to restart', 45, 276);
 };
 
 // Init call
