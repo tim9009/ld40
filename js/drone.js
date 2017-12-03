@@ -58,6 +58,13 @@ drone.reset = function() {
 	this.playerScanned = false;
 };
 
+drone.stopAllSounds = function() {
+	this.engineSound.stop();
+	this.chargeSound.stop();
+	this.scanSound.stop();
+	this.alarmSound.stop();
+};
+
 drone.update = function(step) {
 	// Abort if game is paused
 	if(!gameState.gameRunning) {

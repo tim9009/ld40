@@ -236,7 +236,7 @@ var Vroom = {
 		textLines = text.split('\n');
 
 		for(var i = 0; i < textLines.length; i++) {
-			Vroom.ctx.fillText(textLines[i], x, y + (margin * i));
+			Vroom.ctx.fillText(textLines[i], pos.x, pos.y + (margin * i));
 		}
 	},
 

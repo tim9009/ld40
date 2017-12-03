@@ -15,12 +15,22 @@ var gameState = {
 	mapLose: false,
 	ui: {
 		HUDVisible: false,
+		mainMenuVisible: true,
 		winScreenVisible: false,
 		loseScreenVisible: false,
 	},
 };
 
+var music = new VroomSound('sounds/music.wav');
+music.loadBuffer();
+music.gain = 1;
+
 Vroom.mainUpdateLoopExtension = function() {
+	// Play music
+	if(!music.playing) {
+		//music.play();
+	}
+
 	if(gameState.mapActive) {
 		// Update elapsed time
 		gameState.mapElapsedTime = (new Date() - gameState.mapTimeStart) / 1000;
@@ -29,6 +39,8 @@ Vroom.mainUpdateLoopExtension = function() {
 			gameState.ui.winScreenVisible = true;
 			gameState.mapActive = false;
 			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (1600 - gameState.mapElapsedTime * 10));
+			drone.stopAllSounds();
+			player.stopAllSounds();
 		}
 
 		// Check if map has been lost
@@ -40,7 +52,7 @@ Vroom.mainUpdateLoopExtension = function() {
 	}
 
 	// Check if game should be paused
-	if(gameState.ui.winScreenVisible || gameState.ui.loseScreenVisible) {
+	if(gameState.ui.winScreenVisible || gameState.ui.loseScreenVisible || gameState.ui.mainMenuVisible) {
 		gameState.gameRunning = false;
 	}
 };
@@ -78,6 +90,12 @@ function startMap() {
 	gameState.mapActive = true;
 	gameState.mapWin = false;
 	gameState.mapLose = false;
+}
+
+function startMapNumber(mapNumber) {
+	gameData.activeMap = mapNumber;
+	loadMap();
+	setTimeout(startMap, 800);
 }
 
 function loadJSON(path, success, error) {

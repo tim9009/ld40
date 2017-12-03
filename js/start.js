@@ -19,5 +19,5 @@ function start() {
 start();
 
 // Wait for things to load.
-setTimeout(loadMap, 500);
-setTimeout(startMap, 800);
+//setTimeout(loadMap, 500);
+//setTimeout(startMap, 800);

@@ -38,6 +38,167 @@ HUD.init();
 
 
 
+var mainMenu = new VroomEntity(false);
+
+mainMenu.init = function() {
+	this.layer = 10;
+
+	this.dim = {
+		width: Vroom.dim.width,
+		height: Vroom.dim.height,
+	};
+
+	this.updateBounds();
+
+	this.pos = {
+		x: 0,
+		y: 0,
+	};
+
+	this.currentMenuPage = 'main';
+	this.lastKeyPressTime = null;
+	this.keyPressInterval = 200;
+
+	Vroom.registerEntity(mainMenu);
+};
+
+mainMenu.update = function(step) {
+	if(!gameState.ui.mainMenuVisible) {
+		return;
+	}
+
+	// Check if there is long enough since last key press
+	if(new Date() - this.lastKeyPressTime > this.keyPressInterval) {
+		var enterPressed = Vroom.isKeyPressed(13);
+		var escPressed = Vroom.isKeyPressed(27);
+		var onePressed = Vroom.isKeyPressed(49);
+		var twoPressed = Vroom.isKeyPressed(50);
+		var threePressed = Vroom.isKeyPressed(51);
+
+		if(enterPressed || escPressed || onePressed || twoPressed || threePressed) {
+			this.lastKeyPressTime = new Date();
+		}
+		
+		if(escPressed) {
+			this.currentMenuPage = 'main';
+		}
+
+
+		if(this.currentMenuPage == 'main') {
+			if(onePressed) {
+				console.log('got it!');
+				gameState.ui.mainMenuVisible = false;
+				startMapNumber(0);
+			}else
+
+			if(twoPressed) {
+				this.currentMenuPage = 'mapSelector';
+			} else
+
+			if(threePressed) {
+				this.currentMenuPage = 'tutorial';
+			}
+		} else
+
+		if(this.currentMenuPage === 'mapSelector') {
+			if(onePressed) {
+				startMapNumber(0);
+			} else
+
+			if(twoPressed) {
+				startMapNumber(1);
+			} else
+
+			if(threePressed) {
+				startMapNumber(2);
+			}
+		}
+	}
+};
+
+mainMenu.render = function(camera) {
+	if(!gameState.ui.mainMenuVisible) {
+		return;
+	}
+
+	// Background
+	Vroom.ctx.fillStyle = 'black';
+	Vroom.ctx.fillRect(this.pos.x, this.pos.y, this.dim.width, this.dim.height);
+
+	// Title
+	Vroom.ctx.fillStyle = '#fff';
+	Vroom.ctx.font = "40px lcd_solid";
+
+	if(this.currentMenuPage === 'main') {
+		Vroom.ctx.fillText('MAIN MENU', 30, 60);
+	} else
+
+	if(this.currentMenuPage === 'mapSelector') {
+		Vroom.ctx.fillText('CHOOSE A MAP', 30, 60);
+	} else
+
+	if(this.currentMenuPage === 'tutorial') {
+		Vroom.ctx.fillText('HOW TO PLAY', 30, 60);
+	}
+
+	// Body text
+	Vroom.ctx.font = "10px lcd_solid";
+
+	Vroom.ctx.fillText('Navigate the menu by pressing the the coresponding number.', 30, 80);
+	Vroom.ctx.fillText('ESC brings you back to the main menu.', 30, 95);
+
+	if(this.currentMenuPage === 'main') {
+		// First button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 150, 260, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "1" to START GAME', 45, 176);
+
+		// Second button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 200, 260, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "2" to CHOOSE MAP', 45, 226);
+
+		// Third button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 250, 260, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "3" for TUTORIAL', 45, 276);
+	} else
+
+	if(this.currentMenuPage === 'mapSelector') {
+		// First button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 150, 260, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "1" for first map.', 45, 176);
+
+		// Second button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 200, 260, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "2" for second map.', 45, 226);
+	} else
+
+	if(this.currentMenuPage === 'tutorial') {
+		Vroom.ctx.font = "10px lcd_solid";
+		Vroom.multilineText('CONTROLS:\n[A] Run left\n[D] Run right\n[W] Jump\n\n[H] Pick up an item\n[J] Pick up an item\n[K] Pick up an item\n[L] Pick up an item\n', {x: 30, y: 130}, 12);
+		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Arifacts are also heavy!', {x: 30, y: 250}, 12);
+	}
+};
+
+// Init call
+mainMenu.init();
+
+
+
+
 
 var winScreen = new VroomEntity(false);
 
@@ -130,6 +291,8 @@ winScreen.render = function(camera) {
 
 // Init call
 winScreen.init();
+
+
 
 
 

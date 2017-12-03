@@ -89,7 +89,7 @@ player.init = function() {
 
 	this.hitSound = new VroomSound('sounds/hit.wav');
 	this.hitSound.loadBuffer();
-	this.hitSound.gain = 0.4;
+	this.hitSound.gain = 0.3;
 
 	// Register player entity
 	Vroom.registerEntity(player);
@@ -204,7 +204,18 @@ player.dropItem = function(slot) {
 	}
 };
 
+player.stopAllSounds = function() {
+	this.stepSound.stop();
+	this.hitSound.stop();
+	this.jumpSound.stop();
+};
+
 player.onCollision = function(target) {
+	// Abort if game is paused
+	if(!gameState.gameRunning) {
+		return;
+	}
+	
 	// Check if target is bellow player
 	if(target.getTop() >= this.getBottom() - 1 && target.getLeft() < this.getRight() && target.getRight() > this.getLeft()) {
 		this.onGround = true;
