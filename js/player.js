@@ -202,6 +202,11 @@ player.onCollision = function(target) {
 };
 
 player.update = function(step) {
+	// Abort if game is paused
+	if(!gameState.gameRunning) {
+		return;
+	}
+	
 	this.acc = {x: 0, y: 0};
 	this.handleInput(step);
 	this.cachePosition();

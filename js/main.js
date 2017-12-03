@@ -1,24 +1,71 @@
 ////////////////////////////// GAME VARIABLES //////////////////////////////
 var gameData = {
-	mapData: null,
-	mapObjects: {},
+	maps: [],
+	activeMap: 0,
 };
 
 var gameState = {
 	gameStarted: false,
+	gameRunning: false,
 	mapActive: false,
+	mapTimeStart: null,
+	mapElapsedTime: null,
+	mapScore: 0,
 	mapWin: false,
 	mapLose: false,
-
+	ui: {
+		HUDVisible: false,
+		winScreenVisible: false,
+	},
 };
 
 Vroom.mainUpdateLoopExtension = function() {
 	if(gameState.mapActive) {
+		// Update elapsed time
+		gameState.mapElapsedTime = (new Date() - gameState.mapTimeStart) / 1000;
+		// Check if map has been won
 		if(gameState.mapWin) {
-			console.log('You won!');
+			gameState.ui.winScreenVisible = true;
+			gameState.mapActive = false;
+			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (1800 - gameState.mapElapsedTime * 10));
 		}
 	}
+
+	// Check if game should be paused
+	if(gameState.ui.winScreenVisible) {
+		gameState.gameRunning = false;
+	}
 };
+
+function restartMap() {
+	deregisterMap();
+	deleteMapObjects();
+	loadMap();
+
+	// Reset UI
+	gameState.ui.winScreenVisible = false;
+
+	startMap();
+}
+
+function startMap() {
+	registerMap();
+
+	Vroom.physics.gravity = {
+		x: 0,
+		y: 0.001,
+	};
+
+	gameState.ui.HUDVisible = true;
+
+	gameState.mapTimeStart = new Date();
+	gameState.mapElapsedTime = null;
+	gameState.mapScore = 0;
+	gameState.gameRunning = true;
+	gameState.mapActive = true;
+	gameState.mapWin = false;
+	gameState.mapLose = false;
+}
 
 function loadJSON(path, success, error) {
 	var xhr = new XMLHttpRequest();
@@ -40,5 +87,7 @@ function loadJSON(path, success, error) {
 
 // Get map file
 loadJSON('map/map_data.json', function(data) {
-	gameData.mapData = data;
+	var mapNumber = gameData.maps.length;
+	gameData.maps[mapNumber] = {mapData: data};
+	gameData.maps[mapNumber].mapObjects = {};
 });

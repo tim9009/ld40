@@ -228,7 +228,7 @@ var Vroom = {
 		return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
 	},
 
-	multilineText: function(text, x, y, margin) {
+	multilineText: function(text, pos, margin) {
 		if(typeof margin === 'undefined') {
 			margin = 0;
 		}

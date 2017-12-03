@@ -11,40 +11,30 @@ function loadMap() {
 	Vroom.registerEntity(floor);
 	Vroom.registerEntity(leftWall);
 	Vroom.registerEntity(rightWall);
-
-	// console.log('Registering map.');
-	registerMap();
-
-	// console.log('Activating gravity.');
-	Vroom.physics.gravity = {
-		x: 0,
-		y: 0.001,
-	};
-
-	gameState.mapActive = true;
 }
 
 function initMap() {
 	// console.log('Inititating map.');
-	if(gameData.mapData) {
+	if(gameData.maps[gameData.activeMap].mapData) {
+		var mapData = gameData.maps[gameData.activeMap].mapData;
 		// console.log('Map data found.');
-		for (var layer in gameData.mapData.layers) {
+		for (var layer in mapData.layers) {
 			// console.log('Loading layer: ' + layer);
-			// console.log(gameData.mapData.layers[layer]);
+			// console.log(mapData.layers[layer]);
 
 			// Tile layers
-			if(gameData.mapData.layers[layer].type == 'tilelayer') {
-				for (var tileIndex in gameData.mapData.layers[layer].data) {
-					var tileNumber = gameData.mapData.layers[layer].data[tileIndex];
+			if(mapData.layers[layer].type == 'tilelayer') {
+				for (var tileIndex in mapData.layers[layer].data) {
+					var tileNumber = mapData.layers[layer].data[tileIndex];
 					// console.log('Parsing tile with tileNumber: ' + tileNumber);
 					
 					if(tileNumber !== 0) {
-						var row = Math.floor(tileIndex / gameData.mapData.layers[layer].width);
-						var col = tileIndex % gameData.mapData.layers[layer].width;
+						var row = Math.floor(tileIndex / mapData.layers[layer].width);
+						var col = tileIndex % mapData.layers[layer].width;
 
 						var tileDim = {
-							width: gameData.mapData.tilewidth,
-							height: gameData.mapData.tileheight,
+							width: mapData.tilewidth,
+							height: mapData.tileheight,
 						};
 
 						var tilePos = {
@@ -53,15 +43,15 @@ function initMap() {
 						};
 
 						var tile = new Tile(tileDim, tileDim, tilePos, parseInt(layer, 10), tileNumber);
-						gameData.mapObjects[tile._id] = tile;
+						gameData.maps[gameData.activeMap].mapObjects[tile._id] = tile;
 					}
 				}
 			} else
 
 			// Object layers
-			if(gameData.mapData.layers[layer].type == 'objectgroup') {
-				for (var itemIndex in gameData.mapData.layers[layer].objects) {
-					var obj = gameData.mapData.layers[layer].objects[itemIndex];
+			if(mapData.layers[layer].type == 'objectgroup') {
+				for (var itemIndex in mapData.layers[layer].objects) {
+					var obj = mapData.layers[layer].objects[itemIndex];
 					// console.log('Parsing object with id: ' + obj.id);
 					if(obj.type == 'player') {
 						player.pos.x = obj.x;
@@ -70,7 +60,6 @@ function initMap() {
 					} else
 
 					if(obj.type == 'trigger') {
-						console.log('ADDING TRIGGER');
 						var triggerDim = {
 							width: obj.width,
 							height: obj.height,
@@ -82,7 +71,7 @@ function initMap() {
 						};
 
 						var triggerEntity = new Trigger(triggerDim, triggerPos, parseInt(layer, 10), obj.properties.triggerEffect);
-						gameData.mapObjects[triggerEntity._id] = triggerEntity;
+						gameData.maps[gameData.activeMap].mapObjects[triggerEntity._id] = triggerEntity;
 					} else {
 
 						var itemDim = {
@@ -106,7 +95,7 @@ function initMap() {
 						var itemPhysicsEnabled = obj.properties.physicsEnabled;
 
 						var objEntity = new Item(itemPhysicsEnabled, itemDim, itemDim, itemPos, parseInt(layer, 10), obj.type, sprite, animated, frames);
-						gameData.mapObjects[objEntity._id] = objEntity;
+						gameData.maps[gameData.activeMap].mapObjects[objEntity._id] = objEntity;
 						// console.log(objEntity);
 					}
 				}
@@ -116,24 +105,30 @@ function initMap() {
 }
 
 function registerMap() {
-	for(var tile in gameData.mapObjects) {
-		Vroom.registerEntity(gameData.mapObjects[tile]);
+	for(var tile in gameData.maps[gameData.activeMap].mapObjects) {
+		Vroom.registerEntity(gameData.maps[gameData.activeMap].mapObjects[tile]);
 	}
 }
 
 function deregisterMap() {
-	for(var tile in gameData.mapObjects) {
+	for(var tile in gameData.maps[gameData.activeMap].mapObjects) {
 		Vroom.deregisterEntity(tile);
 	}
+}
+
+function deleteMapObjects() {
+	gameData.maps[gameData.activeMap].mapObjects = {};
 }
 
 // ABSOLUTE WALLS
 var floor = new VroomEntity(true, VroomEntity.STATIC);
 
 floor.init = function() {
+	var mapData = gameData.maps[gameData.activeMap].mapData;
+
 	this.layer = 0;
 	this.dim = {
-		width: gameData.mapData.width * gameData.mapData.tileheight + 1000,
+		width: mapData.width * mapData.tileheight + 1000,
 		height: 500,
 	};
 
@@ -141,7 +136,7 @@ floor.init = function() {
 
 	this.pos = {
 		x: -500,
-		y: gameData.mapData.height * gameData.mapData.tileheight,
+		y: mapData.height * mapData.tileheight,
 	};
 };
 
@@ -155,10 +150,12 @@ floor.render = function(camera) {
 var leftWall = new VroomEntity(true, VroomEntity.STATIC);
 
 leftWall.init = function() {
+	var mapData = gameData.maps[gameData.activeMap].mapData;
+
 	this.layer = 0;
 	this.dim = {
 		width: 500,
-		height: gameData.mapData.height * gameData.mapData.tileheight + 500,
+		height: mapData.height * mapData.tileheight + 500,
 	};
 
 	this.updateBounds();
@@ -179,16 +176,18 @@ leftWall.render = function(camera) {
 var rightWall = new VroomEntity(true, VroomEntity.STATIC);
 
 rightWall.init = function() {
+	var mapData = gameData.maps[gameData.activeMap].mapData;
+
 	this.layer = 0;
 	this.dim = {
 		width: 500,
-		height: gameData.mapData.height * gameData.mapData.tileheight + 500,
+		height: mapData.height * mapData.tileheight + 500,
 	};
 
 	this.updateBounds();
 
 	this.pos = {
-		x: gameData.mapData.width * gameData.mapData.tilewidth,
+		x: mapData.width * mapData.tilewidth,
 		y: 0,
 	};
 
