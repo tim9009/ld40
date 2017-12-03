@@ -87,6 +87,10 @@ player.init = function() {
 	this.jumpSound.loadBuffer();
 	this.jumpSound.gain = 0.5;
 
+	this.hitSound = new VroomSound('sounds/hit.wav');
+	this.hitSound.loadBuffer();
+	this.hitSound.gain = 0.4;
+
 	// Register player entity
 	Vroom.registerEntity(player);
 };
@@ -206,6 +210,10 @@ player.onCollision = function(target) {
 		this.onGround = true;
 		this.jumping = false;
 		this.falling = false;
+
+		if(this.stateCache.falling === true) {
+			this.hitSound.play();
+		}
 	} else
 
 	// Check if target is above player

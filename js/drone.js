@@ -32,6 +32,22 @@ drone.init = function() {
 
 	this.sprite = new VroomSprite('sprites/drone.png', false, 0, this.dim.width, this.dim.height, 1, 0);
 
+	this.engineSound = new VroomSound('sounds/engine.wav');
+	this.engineSound.loadBuffer();
+	this.engineSound.gain = 0.8;
+
+	this.chargeSound = new VroomSound('sounds/charge.wav');
+	this.chargeSound.loadBuffer();
+	this.chargeSound.gain = 0.4;
+
+	this.scanSound = new VroomSound('sounds/scan.wav');
+	this.scanSound.loadBuffer();
+	this.scanSound.gain = 0.4;
+
+	this.alarmSound = new VroomSound('sounds/alarm.wav');
+	this.alarmSound.loadBuffer();
+	this.alarmSound.gain = 0.5;
+
 	Vroom.registerEntity(drone);
 };
 
@@ -43,6 +59,17 @@ drone.reset = function() {
 };
 
 drone.update = function(step) {
+	// Abort if game is paused
+	if(!gameState.gameRunning) {
+		return;
+	}
+	var largestDistance = Math.max(Math.abs(this.pos.x - player.pos.x), Math.abs(this.pos.y - player.pos.y));
+	this.engineSound.gain = Math.max(0.8 - largestDistance / 2000, 0);
+
+	if(!this.engineSound.playing) {
+		this.engineSound.play();
+	}
+
 	var targetPos = {
 		x: player.pos.x - this.halfDim.width + player.halfDim.width,
 		y: player.pos.y - this.hoverHeight,
@@ -69,9 +96,11 @@ drone.update = function(step) {
 		if(!this.scanActive) {
 			this.scanActive = true;
 			this.scanStart = new Date();
+			this.chargeSound.play();
 		}
 
 		if(this.scanEffectActive && !this.playerScanned) {
+			this.alarmSound.play();
 			this.playerScanned = true;
 			setTimeout(function() {
 				gameState.mapLose = true;
@@ -94,12 +123,18 @@ drone.update = function(step) {
 			if(new Date() - this.scanStart >= this.scanSpoolTime) {
 				// Activate scan effect
 				this.scanEffectActive = true;
+				this.scanSound.play();
 			}
 		}
 	}
 };
 
 drone.render = function(camera) {
+	// Abort if game is paused
+	if(!gameState.gameRunning) {
+		return;
+	}
+
 	var relativePos = {
 		x: this.pos.x - camera.pos.x,
 		y: this.pos.y - camera.pos.y,
