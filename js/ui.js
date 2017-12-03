@@ -108,13 +108,13 @@ winScreen.render = function(camera) {
 	Vroom.ctx.fillText('SCORE: ' + gameState.mapScore + ' points', 30, 180);
 
 	var rank = 'Potato';
-	if(gameState.mapScore > 1800 && gameState.mapScore < 3000) {
+	if(gameState.mapScore > 1600 && gameState.mapScore < 3000) {
 		rank = 'Bronze';
 	} else
-	if(gameState.mapScore > 3000 && gameState.mapScore < 4000) {
+	if(gameState.mapScore > 3000 && gameState.mapScore < 5000) {
 		rank = 'Silver';
 	} else
-	if(gameState.mapScore > 4000) {
+	if(gameState.mapScore > 5000) {
 		rank = 'Gold';
 	}
 
@@ -130,3 +130,68 @@ winScreen.render = function(camera) {
 
 // Init call
 winScreen.init();
+
+
+
+var loseScreen = new VroomEntity(false);
+
+loseScreen.init = function() {
+	this.layer = 10;
+
+	this.dim = {
+		width: Vroom.dim.width,
+		height: Vroom.dim.height,
+	};
+
+	this.updateBounds();
+
+	this.pos = {
+		x: 0,
+		y: 0,
+	};
+
+	Vroom.registerEntity(loseScreen);
+};
+
+loseScreen.update = function(step) {
+	if(!gameState.ui.loseScreenVisible) {
+		return;
+	}
+
+	if(Vroom.isKeyPressed(13)) {
+		restartMap();
+	}
+};
+
+loseScreen.render = function(camera) {
+	if(!gameState.ui.loseScreenVisible) {
+		return;
+	}
+
+	// Background
+	Vroom.ctx.fillStyle = 'black';
+	Vroom.ctx.fillRect(this.pos.x, this.pos.y, this.dim.width, this.dim.height);
+
+	// Title
+	Vroom.ctx.fillStyle = '#fff';
+	Vroom.ctx.font = "40px lcd_solid";
+	Vroom.ctx.fillText('FAILURE', 30, 60);
+
+	// Body text
+	Vroom.ctx.font = "15px lcd_solid";
+
+	Vroom.ctx.fillText('Better luck next time.', 30, 100);
+
+	// Time
+	Vroom.ctx.font = "15px lcd_solid";
+	Vroom.ctx.fillText('Your time: ' + gameState.mapElapsedTime + ' seconds', 30, 120);
+
+	// Back button
+	Vroom.ctx.font = "15px lcd_solid";
+	Vroom.ctx.fillRect(30, 250, 255, 40);
+	Vroom.ctx.fillStyle = '#333';
+	Vroom.ctx.fillText('< Press enter to restart', 45, 276);
+};
+
+// Init call
+loseScreen.init();

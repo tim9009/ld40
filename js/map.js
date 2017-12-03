@@ -59,6 +59,12 @@ function initMap() {
 						player.layer = parseInt(layer, 10);
 					} else
 
+					if(obj.type == 'drone') {
+						drone.pos.x = obj.x;
+						drone.pos.y = obj.y - drone.dim.height;
+						drone.layer = parseInt(layer, 10);
+					} else
+
 					if(obj.type == 'trigger') {
 						var triggerDim = {
 							width: obj.width,

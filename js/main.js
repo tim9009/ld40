@@ -16,6 +16,7 @@ var gameState = {
 	ui: {
 		HUDVisible: false,
 		winScreenVisible: false,
+		loseScreenVisible: false,
 	},
 };
 
@@ -27,23 +28,35 @@ Vroom.mainUpdateLoopExtension = function() {
 		if(gameState.mapWin) {
 			gameState.ui.winScreenVisible = true;
 			gameState.mapActive = false;
-			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (1800 - gameState.mapElapsedTime * 10));
+			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (1600 - gameState.mapElapsedTime * 10));
+		}
+
+		// Check if map has been lost
+		if(gameState.mapLose) {
+			gameState.ui.loseScreenVisible = true;
+			gameState.mapActive = false;
+			gameState.mapScore = 0;
 		}
 	}
 
 	// Check if game should be paused
-	if(gameState.ui.winScreenVisible) {
+	if(gameState.ui.winScreenVisible || gameState.ui.loseScreenVisible) {
 		gameState.gameRunning = false;
 	}
 };
 
 function restartMap() {
+	// Reset drone
+	drone.reset();
+
+	// Reset map and characters
 	deregisterMap();
 	deleteMapObjects();
 	loadMap();
 
 	// Reset UI
 	gameState.ui.winScreenVisible = false;
+	gameState.ui.loseScreenVisible = false;
 
 	startMap();
 }
