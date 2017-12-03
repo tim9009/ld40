@@ -6,9 +6,18 @@ var gameData = {
 
 var gameState = {
 	gameStarted: false,
+	mapActive: false,
+	mapWin: false,
+	mapLose: false,
+
 };
 
 Vroom.mainUpdateLoopExtension = function() {
+	if(gameState.mapActive) {
+		if(gameState.mapWin) {
+			console.log('You won!');
+		}
+	}
 };
 
 function loadJSON(path, success, error) {

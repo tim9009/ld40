@@ -1,4 +1,4 @@
-var mapTileSheet = new VroomSprite('map/tile_sheet.png', false, 0, 32, 32, 2, 0);
+var mapTileSheet = new VroomSprite('map/tile_sheet.png', false, 0, 32, 32, 10, 0);
 
 function loadMap() {
 	initMap();
@@ -20,6 +20,8 @@ function loadMap() {
 		x: 0,
 		y: 0.001,
 	};
+
+	gameState.mapActive = true;
 }
 
 function initMap() {
@@ -65,6 +67,22 @@ function initMap() {
 						player.pos.x = obj.x;
 						player.pos.y = obj.y - player.dim.height;
 						player.layer = parseInt(layer, 10);
+					} else
+
+					if(obj.type == 'trigger') {
+						console.log('ADDING TRIGGER');
+						var triggerDim = {
+							width: obj.width,
+							height: obj.height,
+						};
+
+						var triggerPos = {
+							x: obj.x,
+							y: obj.y,
+						};
+
+						var triggerEntity = new Trigger(triggerDim, triggerPos, parseInt(layer, 10), obj.properties.triggerEffect);
+						gameData.mapObjects[triggerEntity._id] = triggerEntity;
 					} else {
 
 						var itemDim = {

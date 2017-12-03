@@ -195,7 +195,7 @@ player.onCollision = function(target) {
 	}
 
 	if(target instanceof Item) {
-		if(target.itemType === 'treasure') {
+		if(target.itemType === 'artifact') {
 			this.itemsWithinReach.push(target);
 		}
 	}
