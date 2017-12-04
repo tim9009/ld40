@@ -23,8 +23,6 @@ player.init = function() {
 		x: 0.3,
 		y: 0.5,
 	};
-	this.lastMovementTime = Date.now();
-	this.inputTickRate = 20;
 	this.moving = false;
 	this.onGround = false;
 	this.jumping = false;
@@ -93,6 +91,29 @@ player.init = function() {
 
 	// Register player entity
 	Vroom.registerEntity(player);
+};
+
+player.reset = function() {
+	this.vel = {
+		x: 0,
+		y: 0,
+	};
+
+	this.acc = {
+		x: 0,
+		y: 0,
+	};
+
+	this.moving = false;
+	this.onGround = false;
+	this.jumping = false;
+	this.falling = false;
+	this.direction = 'right';
+
+	this.carriedItems = 0;
+
+	this.itemsWithinReach = [];
+	this.collisionTop = false;
 };
 
 player.cachePosition = function() {
@@ -215,7 +236,7 @@ player.onCollision = function(target) {
 	if(!gameState.gameRunning) {
 		return;
 	}
-	
+
 	// Check if target is bellow player
 	if(target.getTop() >= this.getBottom() - 1 && target.getLeft() < this.getRight() && target.getRight() > this.getLeft()) {
 		this.onGround = true;

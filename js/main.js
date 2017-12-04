@@ -78,8 +78,9 @@ function resetMapState() {
 }
 
 function restartMap() {
-	// Reset drone
+	// Reset characters
 	drone.reset();
+	player.reset();
 
 	// Reset map and characters
 	deregisterMap();
@@ -94,6 +95,10 @@ function restartMap() {
 }
 
 function startMap() {
+	// Reset characters
+	drone.reset();
+	player.reset();
+
 	registerMap();
 
 	Vroom.physics.gravity = {
@@ -113,8 +118,10 @@ function startMap() {
 }
 
 function startMapNumber(mapNumber) {
-	// Reset drone
+	// Reset characters
 	drone.reset();
+	player.reset();
+	
 	deregisterMap();
 	deleteMapObjects();
 	gameData.activeMap = mapNumber;

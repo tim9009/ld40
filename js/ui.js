@@ -55,9 +55,14 @@ mainMenu.init = function() {
 		y: 0,
 	};
 
-	this.currentMenuPage = 'main';
+	this.currentMenuPage = 'intro';
+	this.introDisplayed = false;
+	this.introStartTime = null;
+	this.introLength = 4000;
 	this.lastKeyPressTime = null;
 	this.keyPressInterval = 200;
+
+	this.introSprite = new VroomSprite('sprites/intro.jpg', false, 0, 576, 324, 1, 0);
 
 	Vroom.registerEntity(mainMenu);
 };
@@ -78,6 +83,16 @@ mainMenu.open = function() {
 mainMenu.update = function(step) {
 	if(!gameState.ui.mainMenuVisible) {
 		return;
+	}
+
+	if(!this.introDisplayed) {
+		if(this.introStartTime === null) {
+			this.introStartTime = new Date();
+		} else
+		if(new Date() - this.introStartTime > this.introLength) {
+			this.introDisplayed = true;
+			this.currentMenuPage = 'main';
+		}
 	}
 
 	// Check if there is long enough since last key press
@@ -212,6 +227,10 @@ mainMenu.render = function(camera) {
 		Vroom.ctx.font = "10px lcd_solid";
 		Vroom.multilineText('CONTROLS:\n[A] Run left\n[D] Run right\n[W] Jump\n\n[H] Pick up an item\n[J] Pick up an item\n[K] Pick up an item\n[L] Pick up an item\n', {x: 30, y: 130}, 12);
 		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down! Let go of artifacts while in\nthe air to twrow them.', {x: 30, y: 250}, 12);
+	} else
+
+	if(this.currentMenuPage === 'intro') {
+		this.introSprite.render(this.pos, this.dim, this.dim);
 	}
 };
 
