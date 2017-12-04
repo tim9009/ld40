@@ -226,7 +226,7 @@ mainMenu.render = function(camera) {
 	if(this.currentMenuPage === 'tutorial') {
 		Vroom.ctx.font = "10px lcd_solid";
 		Vroom.multilineText('CONTROLS:\n[A] Run left\n[D] Run right\n[W] Jump\n\n[H] Pick up an item\n[J] Pick up an item\n[K] Pick up an item\n[L] Pick up an item\n', {x: 30, y: 130}, 12);
-		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down! Let go of artifacts while in\nthe air to twrow them.', {x: 30, y: 250}, 12);
+		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down! Let go of artifacts while in\nthe air to throw them.', {x: 30, y: 250}, 12);
 	} else
 
 	if(this.currentMenuPage === 'intro') {
