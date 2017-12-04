@@ -64,7 +64,8 @@ mainMenu.init = function() {
 
 mainMenu.open = function() {
 	this.lastKeyPressTime = new Date();
-	
+	this.currentMenuPage = 'main';
+
 	gameState.ui.mainMenuVisible = true;
 	gameState.ui.HUDVisible = false;
 	gameState.ui.winScreenVisible = false;
@@ -198,12 +199,19 @@ mainMenu.render = function(camera) {
 		Vroom.ctx.fillRect(30, 200, 320, 40);
 		Vroom.ctx.fillStyle = '#333';
 		Vroom.ctx.fillText('< Press "2" for the second map.', 45, 226);
+
+		// Thrid button
+		Vroom.ctx.fillStyle = '#fff';
+		Vroom.ctx.font = "15px lcd_solid";
+		Vroom.ctx.fillRect(30, 250, 320, 40);
+		Vroom.ctx.fillStyle = '#333';
+		Vroom.ctx.fillText('< Press "3" for the third map.', 45, 276);
 	} else
 
 	if(this.currentMenuPage === 'tutorial') {
 		Vroom.ctx.font = "10px lcd_solid";
 		Vroom.multilineText('CONTROLS:\n[A] Run left\n[D] Run right\n[W] Jump\n\n[H] Pick up an item\n[J] Pick up an item\n[K] Pick up an item\n[L] Pick up an item\n', {x: 30, y: 130}, 12);
-		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down!', {x: 30, y: 250}, 12);
+		Vroom.multilineText('Try to get to the EXIT carrying as many ARTIFACTS as\npossible without the DRONE scanning you. Be careful,\nthe more artifacts you carry, the easier it will be\nfor the drone to sense you! Artifacts are also heavy\nand will slow you down! Let go of artifacts while in\nthe air to twrow them.', {x: 30, y: 250}, 12);
 	}
 };
 
@@ -248,6 +256,7 @@ winScreen.update = function(step) {
 	if(twoPressed) {
 		if(gameData.activeMap + 1 < gameData.maps.length) {
 			startMapNumber(gameData.activeMap + 1);
+			gameState.ui.winScreenVisible = false;
 		} else {
 			mainMenu.open();
 		}
@@ -277,11 +286,8 @@ winScreen.render = function(camera) {
 
 	if(player.carriedItems === 0) {
 		Vroom.ctx.fillText('Sadly, you did not bring any artifacts with you...', 30, 100);
-	} else
-	if(player.carriedItems === 1) {
-		Vroom.ctx.fillText('You managed to get a single artifact with you.', 30, 100);
 	} else {
-		Vroom.ctx.fillText('You managed to get ' + player.carriedItems + ' artifacts with you.', 30, 100);
+		Vroom.ctx.fillText('You managed to get ' + player.carriedItems + '/4 artifacts with you.', 30, 100);
 	}
 
 	// Time

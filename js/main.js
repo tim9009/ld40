@@ -39,7 +39,7 @@ Vroom.mainUpdateLoopExtension = function() {
 		if(gameState.mapWin) {
 			gameState.ui.winScreenVisible = true;
 			gameState.mapActive = false;
-			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (1600 - gameState.mapElapsedTime * 10));
+			gameState.mapScore = Math.floor(player.carriedItems * 1000 + (2200 - gameState.mapElapsedTime * 10));
 			drone.stopAllSounds();
 			player.stopAllSounds();
 		}
@@ -102,6 +102,9 @@ function startMap() {
 	};
 
 	gameState.ui.HUDVisible = true;
+	gameState.ui.winScreenVisible = false;
+	gameState.ui.loseScreenVisible = false;
+	gameState.ui.mainMenuVisible = false;
 
 	resetMapState();
 
@@ -116,7 +119,7 @@ function startMapNumber(mapNumber) {
 	deleteMapObjects();
 	gameData.activeMap = mapNumber;
 	loadMap();
-	setTimeout(startMap, 800);
+	setTimeout(startMap, 500);
 }
 
 function loadJSON(path, success, error) {
@@ -138,8 +141,20 @@ function loadJSON(path, success, error) {
 
 
 // Get map file
-loadJSON('map/map_data.json', function(data) {
-	var mapNumber = gameData.maps.length;
+loadJSON('map/map_1_data.json', function(data) {
+	var mapNumber = 0;
+	gameData.maps[mapNumber] = {mapData: data};
+	gameData.maps[mapNumber].mapObjects = {};
+});
+
+loadJSON('map/map_2_data.json', function(data) {
+	var mapNumber = 1;
+	gameData.maps[mapNumber] = {mapData: data};
+	gameData.maps[mapNumber].mapObjects = {};
+});
+
+loadJSON('map/map_3_data.json', function(data) {
+	var mapNumber = 2;
 	gameData.maps[mapNumber] = {mapData: data};
 	gameData.maps[mapNumber].mapObjects = {};
 });

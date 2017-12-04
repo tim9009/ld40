@@ -52,7 +52,7 @@
          "name":"Triggers",
          "objects":[
                 {
-                 "height":65.8181818181818,
+                 "height":65.8182,
                  "id":8,
                  "name":"Win trigger",
                  "properties":
@@ -66,8 +66,8 @@
                  "rotation":0,
                  "type":"trigger",
                  "visible":true,
-                 "width":2.10606060606074,
-                 "x":2463.07575757576,
+                 "width":2.10606,
+                 "x":2463.08,
                  "y":256
                 }],
          "opacity":1,
